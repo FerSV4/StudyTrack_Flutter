@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../tasks/presentation/pages/dashboard_page.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -112,7 +113,10 @@ class _LoginPageState extends State<LoginPage> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('¡Login Exitoso!'), backgroundColor: Colors.green),
                     );
-                    // Aquí luego harás el Navigator.push a tu Dashboard
+                    Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (context) => const DashboardPage()),
+);
                   }
                 },
                 builder: (context, state) {

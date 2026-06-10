@@ -6,7 +6,7 @@ class ApiClient {
   final SharedPreferences sharedPreferences;
 
   ApiClient({required this.dio, required this.sharedPreferences}) {
-    dio.options.baseUrl = 'http://10.0.2.2:3000/api'; // IP especial del emulador Android hacia localhost
+    dio.options.baseUrl = 'http://127.0.0.1:3000/api';
     dio.options.connectTimeout = const Duration(seconds: 10);
     
     dio.interceptors.add(InterceptorsWrapper(
@@ -18,7 +18,6 @@ class ApiClient {
         return handler.next(options);
       },
       onError: (DioException e, handler) {
-        // Aquí puedes manejar errores globales (ej. 401 Unauthorized)
         return handler.next(e);
       },
     ));
