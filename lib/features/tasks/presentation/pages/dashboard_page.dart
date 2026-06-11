@@ -175,12 +175,19 @@ class _DashboardPageState extends State<DashboardPage> {
                               'Vence: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year}',
                               style: const TextStyle(color: Color(0xFF64748B)),
                             ),
-                            trailing: Icon(
-                              task.isCompleted 
-                                  ? Icons.check_circle_rounded 
-                                  : Icons.radio_button_unchecked_rounded,
-                              color: task.isCompleted ? const Color(0xFF1D4ED8) : const Color(0xFFCBD5E1),
-                            ),
+                            trailing: IconButton(
+  icon: Icon(
+    task.isCompleted 
+        ? Icons.check_circle_rounded 
+        : Icons.radio_button_unchecked_rounded,
+    color: task.isCompleted ? const Color(0xFF1D4ED8) : const Color(0xFFCBD5E1),
+  ),
+  onPressed: () {
+    context.read<TaskBloc>().add(
+      ToggleTaskStatusRequested(task.id, task.isCompleted),
+    );
+  },
+),
                           ),
                         );
                       },

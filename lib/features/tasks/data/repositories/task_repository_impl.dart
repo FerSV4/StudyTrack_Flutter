@@ -11,4 +11,8 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<List<TaskEntity>> getTasks() async {
     return await remoteDataSource.getTasks();
   }
+  @override
+  Future<void> updateTaskStatus(String id, bool isCompleted) async {
+    return await remoteDataSource.updateTaskStatus(id, isCompleted);
+  }
 }

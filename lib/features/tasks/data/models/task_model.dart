@@ -10,14 +10,16 @@ class TaskModel extends TaskEntity {
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
+    final dateString = json['dueDate'] ?? json['due_date']; 
+    
     return TaskModel(
-      id: json['id'].toString(), // Resiliente si viene como BigInt numérico o String UUID
+      id: json['id'].toString(),
       title: json['title'] ?? 'Sin título',
-      dueDate: json['dueDate'] != null 
-          ? DateTime.parse(json['dueDate']) 
+      dueDate: dateString != null 
+          ? DateTime.parse(dateString) 
           : DateTime.now(),
       priority: json['priority'] ?? 'LOW',
-      isCompleted: json['isCompleted'] ?? false,
+      isCompleted: json['isCompleted'] ?? json['is_completed'] ?? false,
     );
   }
 

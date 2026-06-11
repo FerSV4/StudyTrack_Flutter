@@ -10,3 +10,11 @@ abstract class TaskEvent extends Equatable {
 class GetTasksRequested extends TaskEvent {}
 
 class ClearTasksRequested extends TaskEvent {}
+
+class ToggleTaskStatusRequested extends TaskEvent {
+  final String taskId;
+  final bool currentStatus;
+  const ToggleTaskStatusRequested(this.taskId, this.currentStatus);
+  @override
+  List<Object?> get props => [taskId, currentStatus];
+}

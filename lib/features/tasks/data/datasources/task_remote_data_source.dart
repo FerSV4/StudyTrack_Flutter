@@ -4,6 +4,7 @@ import '../models/task_model.dart';
 
 abstract class TaskRemoteDataSource {
   Future<List<TaskModel>> getTasks();
+  Future<void> updateTaskStatus(String id, bool isCompleted);
 }
 
 class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
@@ -24,6 +25,20 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
       }
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Error al obtener las tareas de NestJS');
+    }
+  }
+  @override
+  Future<void> updateTaskStatus(String id, bool isCompleted) async {
+    try {
+      // Traducimos el booleano al String que exige el DTO de NestJS
+      final statusString = isCompleted ? 'completed' : 'pending'; 
+
+      await apiClient.dio.patch(
+        '/tasks/$id/status',
+        data: {'status': statusString},
+      );
+    } on DioException catch (e) {
+      throw Exception('Error al actualizar tarea: ${e.response?.data['message']}');
     }
   }
 }

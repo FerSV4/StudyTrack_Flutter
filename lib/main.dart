@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
+import 'features/tasks/presentation/bloc/task_bloc.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await di.init(); // ¡Arranca GetIt y SharedPreferences!
+  await di.init();
   
   runApp(const StudyTrackApp());
 }
@@ -19,8 +20,10 @@ class StudyTrackApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          // Le pedimos a GetIt que nos dé el AuthBloc ya ensamblado
           create: (context) => di.sl<AuthBloc>(),
+        ),
+        BlocProvider<TaskBloc>(
+          create: (context) => di.sl<TaskBloc>(),
         ),
       ],
       child: MaterialApp(

@@ -13,6 +13,7 @@ import 'features/tasks/data/datasources/task_remote_data_source.dart';
 import 'features/tasks/data/repositories/task_repository_impl.dart';
 import 'features/tasks/domain/repositories/task_repository.dart';
 import 'features/tasks/domain/usecases/get_tasks_usecase.dart';
+import 'features/tasks/domain/usecases/update_task_status_usecase.dart';
 import 'features/tasks/presentation/bloc/task_bloc.dart';
 
 final sl = GetIt.instance;
@@ -45,8 +46,12 @@ Future<void> init() async {
   // 5. Casos de Uso
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => GetTasksUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateTaskStatusUseCase(sl()));
 
   // 6. Blocs
   sl.registerFactory(() => AuthBloc(loginUseCase: sl()));
-  sl.registerFactory(() => TaskBloc(getTasksUseCase: sl()));
+  sl.registerFactory(() => TaskBloc(
+        getTasksUseCase: sl(),
+        updateTaskStatusUseCase: sl(),
+      ));
 }
