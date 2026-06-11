@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/task_bloc.dart';
-import '../bloc/task_event.dart';
-import '../bloc/task_state.dart';
-import '../../domain/entities/task_entity.dart';
+import 'agenda_page.dart';
+import '../../../academic/presentation/bloc/academic_bloc.dart';
+import '../../../academic/presentation/bloc/academic_event.dart';
+import '../../../academic/presentation/bloc/academic_state.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -16,20 +16,15 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    // Disparar de forma mandatoria la carga de tareas al entrar a la pantalla
-    context.read<TaskBloc>().add(GetTasksRequested());
+    // Dispara la petición a NestJS apenas la pantalla se carga
+    context.read<AcademicBloc>().add(GetActiveTermRequested());
   }
 
-  Color _getPriorityColor(String priority) {
-    switch (priority.toUpperCase()) {
-      case 'HIGH':
-        return const Color(0xFFEF4444); // Rojo
-      case 'MEDIUM':
-        return const Color(0xFFF59E0B); // Amarillo/Naranja
-      case 'LOW':
-      default:
-        return const Color(0xFF10B981); // Verde
-    }
+  Color _hexToColor(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
   }
 
   @override
@@ -39,18 +34,30 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF8FAFC),
         elevation: 0,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hola, Estudiante 👋',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-            ),
-            Text(
-              'Panel de control de tus asignaturas',
-              style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
-            ),
-          ],
+        title: BlocBuilder<AcademicBloc, AcademicState>(
+          builder: (context, state) {
+            String termName = 'Cargando semestre...';
+            
+            if (state is AcademicLoaded) {
+              termName = state.term.name; // Nombre real de PostgreSQL
+            } else if (state is AcademicError) {
+              termName = 'Error de conexión';
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Hola, Estudiante 👋',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                ),
+                Text(
+                  termName,
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+                ),
+              ],
+            );
+          },
         ),
         actions: [
           Padding(
@@ -60,9 +67,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: IconButton(
                 icon: const Icon(Icons.person, color: Color(0xFF64748B)),
                 onPressed: () {
-                  // Al cerrar sesión purgamos el estado del TaskBloc para evitar fugas de información
-                  context.read<TaskBloc>().add(ClearTasksRequested());
-                  Navigator.pop(context);
+                  // Lógica de logout
                 },
               ),
             ),
@@ -74,126 +79,122 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Listado Horizontal de Fechas Estáticas del Diseño
-            SizedBox(
-              height: 80,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 7,
-                itemBuilder: (context, index) {
-                  bool isToday = index == 2;
-                  return Container(
-                    width: 60,
-                    margin: const EdgeInsets.only(right: 12),
-                    decoration: BoxDecoration(
-                      color: isToday ? const Color(0xFF1D4ED8) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: isToday ? null : Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Lun',
-                          style: TextStyle(
-                            color: isToday ? Colors.white70 : const Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${10 + index}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isToday ? Colors.white : const Color(0xFF0F172A),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 24),
             const Text(
-              'Mis Tareas Pendientes',
+              'Mis Materias',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
             ),
             const SizedBox(height: 16),
             
-            // Consumidor del estado de BLoC para inyección de datos reales
             Expanded(
-              child: BlocBuilder<TaskBloc, TaskState>(
+              child: BlocBuilder<AcademicBloc, AcademicState>(
                 builder: (context, state) {
-                  if (state is TaskLoading) {
+                  if (state is AcademicLoading || state is AcademicInitial) {
                     return const Center(child: CircularProgressIndicator(color: Color(0xFF1D4ED8)));
                   }
                   
-                  if (state is TaskError) {
+                  if (state is AcademicError) {
                     return Center(
-                      child: Text(
-                        'Fallo de sincronización: ${state.message}',
-                        style: const TextStyle(color: Colors.red),
-                      ),
+                      child: Text('Error: ${state.message}', style: const TextStyle(color: Colors.red)),
                     );
                   }
 
-                  if (state is TaskLoaded) {
-                    if (state.tasks.isEmpty) {
-                      return const Center(
-                        child: Text('¡Felicidades! No tienes entregas registradas para hoy.'),
-                      );
+                  if (state is AcademicLoaded) {
+                    final subjects = state.term.subjects;
+                    
+                    if (subjects.isEmpty) {
+                      return const Center(child: Text('No tienes materias registradas en este semestre.'));
                     }
 
                     return ListView.builder(
-                      itemCount: state.tasks.length,
+                      itemCount: subjects.length,
                       itemBuilder: (context, index) {
-                        final TaskEntity task = state.tasks[index];
+                        final subject = subjects[index];
+                        final subjectColor = _hexToColor(subject.colorCode);
+
                         return Card(
                           color: Colors.white,
                           elevation: 0,
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                             side: const BorderSide(color: Color(0xFFE2E8F0)),
                           ),
-                          child: ListTile(
-                            leading: Container(
-                              width: 4,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: _getPriorityColor(task.priority),
-                                borderRadius: BorderRadius.circular(2),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () {
+                              // Navegamos a la Agenda, pasándole el nombre de la materia para que filtre
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AgendaPage(
+                                    filterBySubjectName: subject.name,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                children: [
+                                  // Cuadro de color de la materia
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: subjectColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: Icon(Icons.folder_outlined, color: subjectColor),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  // Información de la materia y progreso
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          subject.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Color(0xFF0F172A),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // Barra de progreso de diseño
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: LinearProgressIndicator(
+                                                value: 0.5, // Progreso simulado al 50%
+                                                backgroundColor: const Color(0xFFE2E8F0),
+                                                valueColor: AlwaysStoppedAnimation<Color>(subjectColor),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            const Text(
+                                              '50%',
+                                              style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.chevron_right, color: Color(0xFFCBD5E1)),
+                                ],
                               ),
                             ),
-                            title: Text(
-                              task.title,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                            ),
-                            subtitle: Text(
-                              'Vence: ${task.dueDate.day}/${task.dueDate.month}/${task.dueDate.year}',
-                              style: const TextStyle(color: Color(0xFF64748B)),
-                            ),
-                            trailing: IconButton(
-  icon: Icon(
-    task.isCompleted 
-        ? Icons.check_circle_rounded 
-        : Icons.radio_button_unchecked_rounded,
-    color: task.isCompleted ? const Color(0xFF1D4ED8) : const Color(0xFFCBD5E1),
-  ),
-  onPressed: () {
-    context.read<TaskBloc>().add(
-      ToggleTaskStatusRequested(task.id, task.isCompleted),
-    );
-  },
-),
                           ),
                         );
                       },
                     );
                   }
-
+                  
                   return const SizedBox();
                 },
               ),
@@ -206,17 +207,20 @@ class _DashboardPageState extends State<DashboardPage> {
         unselectedItemColor: const Color(0xFF94A3B8),
         showUnselectedLabels: true,
         currentIndex: 0,
+        onTap: (index) {
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AgendaPage()), 
+            );
+          }
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.folder_outlined), label: 'Materias'),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), label: 'Agenda'),
           BottomNavigationBarItem(icon: Icon(Icons.timer_outlined), label: 'Estudio'),
           BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: 'Ajustes'),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: const Color(0xFF1D4ED8),
-        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

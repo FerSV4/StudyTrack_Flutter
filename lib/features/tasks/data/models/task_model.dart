@@ -7,19 +7,27 @@ class TaskModel extends TaskEntity {
     required super.dueDate,
     required super.priority,
     required super.isCompleted,
+    required super.subjectName,
+    required super.subjectColor,
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     final dateString = json['dueDate'] ?? json['due_date']; 
     
+    // Extraemos el objeto anidado de la materia, si existe
+    final subject = json['subjects'] as Map<String, dynamic>?;
+
     return TaskModel(
       id: json['id'].toString(),
       title: json['title'] ?? 'Sin título',
       dueDate: dateString != null 
           ? DateTime.parse(dateString) 
           : DateTime.now(),
-      priority: json['priority'] ?? 'LOW',
-      isCompleted: json['isCompleted'] ?? json['is_completed'] ?? false,
+      priority: json['priority'] ?? 'medium',
+      isCompleted: json['status'] == 'completed',
+      // Mapeamos los campos anidados con valores por defecto por seguridad
+      subjectName: subject?['name'] ?? 'Materia General',
+      subjectColor: subject?['color_code'] ?? '#808080', 
     );
   }
 
@@ -27,9 +35,9 @@ class TaskModel extends TaskEntity {
     return {
       'id': id,
       'title': title,
-      'dueDate': dueDate.toIso8601String(),
+      'due_date': dueDate.toIso8601String(),
       'priority': priority,
-      'isCompleted': isCompleted,
+      'status': isCompleted ? 'completed' : 'pending',
     };
   }
 }

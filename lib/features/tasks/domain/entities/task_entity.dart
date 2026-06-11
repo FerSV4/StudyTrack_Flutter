@@ -6,6 +6,8 @@ class TaskEntity extends Equatable {
   final DateTime dueDate;
   final String priority;
   final bool isCompleted;
+  final String subjectName;
+  final String subjectColor;
 
   const TaskEntity({
     required this.id,
@@ -13,8 +15,10 @@ class TaskEntity extends Equatable {
     required this.dueDate,
     required this.priority,
     required this.isCompleted,
+    required this.subjectName,
+    required this.subjectColor,
   });
 
   @override
-  List<Object?> get props => [id, title, dueDate, priority, isCompleted];
+  List<Object?> get props => [id, title, dueDate, priority, isCompleted, subjectName, subjectColor];
 }

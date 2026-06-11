@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/tasks/presentation/bloc/task_bloc.dart';
+import 'features/academic/presentation/bloc/academic_bloc.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
@@ -24,6 +25,9 @@ class StudyTrackApp extends StatelessWidget {
         ),
         BlocProvider<TaskBloc>(
           create: (context) => di.sl<TaskBloc>(),
+        ),
+        BlocProvider<AcademicBloc>(
+          create: (context) => di.sl<AcademicBloc>(),
         ),
       ],
       child: MaterialApp(
