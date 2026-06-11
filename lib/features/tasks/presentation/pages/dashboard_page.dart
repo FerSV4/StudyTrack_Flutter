@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'agenda_page.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../academic/presentation/bloc/academic_bloc.dart';
 import '../../../academic/presentation/bloc/academic_event.dart';
 import '../../../academic/presentation/bloc/academic_state.dart';
@@ -209,10 +210,9 @@ class _DashboardPageState extends State<DashboardPage> {
         currentIndex: 0,
         onTap: (index) {
           if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AgendaPage()), 
-            );
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AgendaPage()));
+          } else if (index == 3) { // El índice 3 es "Ajustes/Perfil"
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
           }
         },
         items: const [
