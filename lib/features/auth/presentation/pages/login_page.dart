@@ -48,7 +48,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 48),
               
-              // Input Correo
               const Text('Correo electrónico', style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               TextField(
@@ -70,7 +69,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 24),
 
-              // Input Contraseña
               const Text('Contraseña', style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               TextField(
@@ -102,7 +100,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 24),
 
-              // Botón Principal reactivo al BLoC
               BlocConsumer<AuthBloc, AuthState>(
                 listener: (context, state) {
                   if (state is AuthError) {
@@ -156,7 +153,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 32),
 
-              // Botón Google
               OutlinedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.g_mobiledata, color: Colors.red, size: 28),

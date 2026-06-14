@@ -5,6 +5,7 @@ import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../academic/presentation/bloc/academic_bloc.dart';
 import '../../../academic/presentation/bloc/academic_event.dart';
 import '../../../academic/presentation/bloc/academic_state.dart';
+import '../widgets/task_form_bottom_sheet.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -17,7 +18,6 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    // Dispara la petición a NestJS apenas la pantalla se carga
     context.read<AcademicBloc>().add(GetActiveTermRequested());
   }
 
@@ -40,7 +40,7 @@ class _DashboardPageState extends State<DashboardPage> {
             String termName = 'Cargando semestre...';
             
             if (state is AcademicLoaded) {
-              termName = state.term.name; // Nombre real de PostgreSQL
+              termName = state.term.name;
             } else if (state is AcademicError) {
               termName = 'Error de conexión';
             }
@@ -49,7 +49,7 @@ class _DashboardPageState extends State<DashboardPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Hola, Estudiante 👋',
+                  'Hola, Estudiante StudyTrack',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                 ),
                 Text(
@@ -68,7 +68,6 @@ class _DashboardPageState extends State<DashboardPage> {
               child: IconButton(
                 icon: const Icon(Icons.person, color: Color(0xFF64748B)),
                 onPressed: () {
-                  // Lógica de logout
                 },
               ),
             ),
@@ -123,7 +122,6 @@ class _DashboardPageState extends State<DashboardPage> {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(16),
                             onTap: () {
-                              // Navegamos a la Agenda, pasándole el nombre de la materia para que filtre
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -137,7 +135,6 @@ class _DashboardPageState extends State<DashboardPage> {
                               padding: const EdgeInsets.all(16.0),
                               child: Row(
                                 children: [
-                                  // Cuadro de color de la materia
                                   Container(
                                     width: 48,
                                     height: 48,
@@ -150,7 +147,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                     ),
                                   ),
                                   const SizedBox(width: 16),
-                                  // Información de la materia y progreso
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,12 +160,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                           ),
                                         ),
                                         const SizedBox(height: 8),
-                                        // Barra de progreso de diseño
                                         Row(
                                           children: [
                                             Expanded(
                                               child: LinearProgressIndicator(
-                                                value: 0.5, // Progreso simulado al 50%
+                                                value: 0.5,
                                                 backgroundColor: const Color(0xFFE2E8F0),
                                                 valueColor: AlwaysStoppedAnimation<Color>(subjectColor),
                                                 borderRadius: BorderRadius.circular(4),
@@ -202,6 +197,16 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF1D4ED8),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        onPressed: () {
+          showTaskFormBottomSheet(context);
+        },
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: const Color(0xFF1D4ED8),

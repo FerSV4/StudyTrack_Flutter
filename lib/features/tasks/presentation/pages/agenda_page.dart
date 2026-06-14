@@ -4,9 +4,10 @@ import '../bloc/task_bloc.dart';
 import '../bloc/task_event.dart';
 import '../bloc/task_state.dart';
 import '../../domain/entities/task_entity.dart';
+import '../widgets/task_form_bottom_sheet.dart';
 
 class AgendaPage extends StatefulWidget {
-  final String? filterBySubjectName; // Opcional: para filtrar si tocamos una materia específica
+  final String? filterBySubjectName;
 
   const AgendaPage({super.key, this.filterBySubjectName});
 
@@ -18,7 +19,6 @@ class _AgendaPageState extends State<AgendaPage> {
   @override
   void initState() {
     super.initState();
-    // Pedimos las tareas a NestJS al abrir la agenda
     context.read<TaskBloc>().add(GetTasksRequested());
   }
 
@@ -27,6 +27,36 @@ class _AgendaPageState extends State<AgendaPage> {
     if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
     buffer.write(hexString.replaceFirst('#', ''));
     return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  Future<void> _confirmDelete(TaskEntity task) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text('Eliminar tarea'),
+          content: Text('Se eliminara "${task.title}". Esta accion no se puede deshacer.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Eliminar',
+                style: TextStyle(color: Color(0xFFEF4444)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true && mounted) {
+      context.read<TaskBloc>().add(DeleteTaskRequested(task.id));
+    }
   }
 
   @override
@@ -59,7 +89,6 @@ class _AgendaPageState extends State<AgendaPage> {
             }
 
             if (state is TaskLoaded) {
-              // Si venimos del Dashboard tocando una materia, filtramos localmente
               List<TaskEntity> displayTasks = state.tasks;
               if (widget.filterBySubjectName != null) {
                 displayTasks = displayTasks.where((t) => t.subjectName == widget.filterBySubjectName).toList();
@@ -116,17 +145,59 @@ class _AgendaPageState extends State<AgendaPage> {
                           ),
                         ],
                       ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          task.isCompleted ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                          color: task.isCompleted ? const Color(0xFF1D4ED8) : const Color(0xFFCBD5E1),
-                        ),
-                        onPressed: () {
-                          // ¡Disparamos el evento de actualización que ya habiamos programado!
-                          context.read<TaskBloc>().add(
-                            ToggleTaskStatusRequested(task.id, task.isCompleted),
-                          );
+                      trailing: PopupMenuButton<String>(
+                        padding: EdgeInsets.zero,
+                        color: Colors.white,
+                        surfaceTintColor: Colors.white,
+                        onSelected: (value) {
+                          if (value == 'toggle') {
+                            context.read<TaskBloc>().add(
+                              ToggleTaskStatusRequested(task.id, task.isCompleted),
+                            );
+                          } else if (value == 'edit') {
+                            showTaskFormBottomSheet(context, task: task);
+                          } else if (value == 'delete') {
+                            _confirmDelete(task);
+                          }
                         },
+                        itemBuilder: (context) => [
+                          PopupMenuItem<String>(
+                            value: 'toggle',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  task.isCompleted
+                                      ? Icons.radio_button_unchecked_rounded
+                                      : Icons.check_circle_rounded,
+                                  color: const Color(0xFF1D4ED8),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(task.isCompleted ? 'Marcar pendiente' : 'Marcar completada'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_outlined, color: Color(0xFF1D4ED8)),
+                                SizedBox(width: 10),
+                                Text('Editar'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+                                SizedBox(width: 10),
+                                Text('Eliminar'),
+                              ],
+                            ),
+                          ),
+                        ],
+                        child: const Icon(Icons.more_vert, color: Color(0xFF94A3B8)),
                       ),
                     ),
                   );
@@ -137,6 +208,19 @@ class _AgendaPageState extends State<AgendaPage> {
             return const SizedBox();
           },
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF1D4ED8),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        onPressed: () {
+          showTaskFormBottomSheet(
+            context,
+            initialSubjectName: widget.filterBySubjectName,
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

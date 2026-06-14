@@ -17,9 +17,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         '/auth/login',
         data: {'email': email, 'password': password},
       );
-      // NestJS devuelve access_token
       final token = response.data['access_token'];
-      // Guardamos el token en Shared Preferences
       await apiClient.sharedPreferences.setString('jwt_token', token);
       return token;
     } on DioException catch (e) {
