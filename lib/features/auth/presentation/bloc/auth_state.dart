@@ -13,7 +13,7 @@ class AuthAuthenticated extends AuthState {
   @override
   List<Object?> get props => [token];
 }
-class AuthUnauthenticated extends AuthState {} // Dispara la limpieza de Tareas en la UI
+class AuthUnauthenticated extends AuthState {} 
 class AuthError extends AuthState {
   final String message;
   AuthError(this.message);

@@ -5,6 +5,9 @@ import '../models/task_model.dart';
 abstract class TaskRemoteDataSource {
   Future<List<TaskModel>> getTasks();
   Future<void> updateTaskStatus(String id, bool isCompleted);
+  Future<void> createTask(TaskModel task);
+  Future<void> updateTaskDetails(String id, TaskModel task);
+  Future<void> deleteTask(String id);
 }
 
 class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
@@ -30,7 +33,6 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
   @override
   Future<void> updateTaskStatus(String id, bool isCompleted) async {
     try {
-      // Traducimos el booleano al String que exige el DTO de NestJS
       final statusString = isCompleted ? 'completed' : 'pending'; 
 
       await apiClient.dio.patch(
@@ -39,6 +41,39 @@ class TaskRemoteDataSourceImpl implements TaskRemoteDataSource {
       );
     } on DioException catch (e) {
       throw Exception('Error al actualizar tarea: ${e.response?.data['message']}');
+    }
+  }
+
+  @override
+  Future<void> createTask(TaskModel task) async {
+    try {
+      await apiClient.dio.post(
+        '/tasks',
+        data: task.toCreateOrUpdateJson(),
+      );
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Error al crear la tarea');
+    }
+  }
+
+  @override
+  Future<void> updateTaskDetails(String id, TaskModel task) async {
+    try {
+      await apiClient.dio.patch(
+        '/tasks/$id',
+        data: task.toCreateOrUpdateJson(),
+      );
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Error al editar la tarea');
+    }
+  }
+
+  @override
+  Future<void> deleteTask(String id) async {
+    try {
+      await apiClient.dio.delete('/tasks/$id');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Error al eliminar la tarea');
     }
   }
 }
