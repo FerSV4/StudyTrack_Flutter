@@ -30,6 +30,13 @@ import 'features/profile/domain/repositories/profile_repository.dart';
 import 'features/profile/domain/usecases/get_profile_usecase.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
 
+import 'features/study_sessions/data/datasources/study_session_remote_data_source.dart';
+import 'features/study_sessions/data/repositories/study_session_repository_impl.dart';
+import 'features/study_sessions/domain/repositories/study_session_repository.dart';
+import 'features/study_sessions/domain/usecases/finish_session_usecase.dart';
+import 'features/study_sessions/domain/usecases/start_session_usecase.dart';
+import 'features/study_sessions/presentation/bloc/study_session_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -46,12 +53,14 @@ Future<void> init() async {
   sl.registerLazySingleton<TaskRemoteDataSource>(() => TaskRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<AcademicRemoteDataSource>(() => AcademicRemoteDataSource(apiClient: sl()));
   sl.registerLazySingleton<ProfileRemoteDataSource>(() => ProfileRemoteDataSourceImpl(apiClient: sl()));
+  sl.registerLazySingleton<StudySessionRemoteDataSource>(() => StudySessionRemoteDataSourceImpl(apiClient: sl()));
 
   // 4. Repositorios
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<TaskRepository>(() => TaskRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<AcademicRepository>(() => AcademicRepositoryImpl(remoteDataSource: sl()));
   sl.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton<StudySessionRepository>(() => StudySessionRepositoryImpl(remoteDataSource: sl()));
 
   // 5. Casos de Uso
   sl.registerLazySingleton(() => LoginUseCase(sl()));
@@ -62,6 +71,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => DeleteTaskUseCase(sl()));
   sl.registerLazySingleton(() => GetActiveTermUseCase(sl()));
   sl.registerLazySingleton(() => GetProfileUseCase(sl()));
+  sl.registerLazySingleton(() => StartSessionUseCase(sl()));
+  sl.registerLazySingleton(() => FinishSessionUseCase(sl()));
 
   // 6. Blocs
   sl.registerFactory(() => AuthBloc(loginUseCase: sl()));
@@ -74,4 +85,8 @@ Future<void> init() async {
       ));
   sl.registerFactory(() => AcademicBloc(getActiveTermUseCase: sl()));
   sl.registerFactory(() => ProfileBloc(getProfileUseCase: sl()));
+  sl.registerFactory(() => StudySessionBloc(
+        startSessionUseCase: sl(),
+        finishSessionUseCase: sl(),
+      ));
 }

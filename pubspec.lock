@@ -381,6 +381,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  studytrack_design_system:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: ab012d5c92f88326296c15936eecfd5ba2ce2b8c
+      url: "https://github.com/FerSV4/studytrack-design-system.git"
+    source: git
+    version: "0.0.1"
   term_glyph:
     dependency: transitive
     description:
