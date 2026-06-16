@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:studytrack_design_system/studytrack_design_system.dart';
 import 'agenda_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../academic/presentation/pages/create_term_page.dart';
 import '../../../academic/presentation/bloc/academic_bloc.dart';
 import '../../../academic/presentation/bloc/academic_event.dart';
 import '../../../academic/presentation/bloc/academic_state.dart';
@@ -80,17 +82,45 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Mis Materias',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-            ),
-            const SizedBox(height: 16),
-            
             Expanded(
               child: BlocBuilder<AcademicBloc, AcademicState>(
                 builder: (context, state) {
                   if (state is AcademicLoading || state is AcademicInitial) {
                     return const Center(child: CircularProgressIndicator(color: Color(0xFF1D4ED8)));
+                  }
+
+                  if (state is AcademicEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Aún no tienes un semestre activo',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: 240,
+                            child: StButton(
+                              text: 'Configurar Semestre',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const CreateTermPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }
                   
                   if (state is AcademicError) {
@@ -102,93 +132,103 @@ class _DashboardPageState extends State<DashboardPage> {
                   if (state is AcademicLoaded) {
                     final subjects = state.term.subjects;
                     
-                    if (subjects.isEmpty) {
-                      return const Center(child: Text('No tienes materias registradas en este semestre.'));
-                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Mis Materias',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: subjects.isEmpty
+                              ? const Center(child: Text('No tienes materias registradas en este semestre.'))
+                              : ListView.builder(
+                                  itemCount: subjects.length,
+                                  itemBuilder: (context, index) {
+                                    final subject = subjects[index];
+                                    final subjectColor = _hexToColor(subject.colorCode);
 
-                    return ListView.builder(
-                      itemCount: subjects.length,
-                      itemBuilder: (context, index) {
-                        final subject = subjects[index];
-                        final subjectColor = _hexToColor(subject.colorCode);
-
-                        return Card(
-                          color: Colors.white,
-                          elevation: 0,
-                          margin: const EdgeInsets.only(bottom: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: const BorderSide(color: Color(0xFFE2E8F0)),
-                          ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AgendaPage(
-                                    filterBySubjectName: subject.name,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: subjectColor.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Center(
-                                      child: Icon(Icons.folder_outlined, color: subjectColor),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          subject.name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: Color(0xFF0F172A),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: LinearProgressIndicator(
-                                                value: 0.5,
-                                                backgroundColor: const Color(0xFFE2E8F0),
-                                                valueColor: AlwaysStoppedAnimation<Color>(subjectColor),
-                                                borderRadius: BorderRadius.circular(4),
+                                    return Card(
+                                      color: Colors.white,
+                                      elevation: 0,
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                      ),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(16),
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AgendaPage(
+                                                filterBySubjectName: subject.name,
                                               ),
                                             ),
-                                            const SizedBox(width: 8),
-                                            const Text(
-                                              '50%',
-                                              style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                                            ),
-                                          ],
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 48,
+                                                height: 48,
+                                                decoration: BoxDecoration(
+                                                  color: subjectColor.withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Center(
+                                                  child: Icon(Icons.folder_outlined, color: subjectColor),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      subject.name,
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
+                                                        color: Color(0xFF0F172A),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: LinearProgressIndicator(
+                                                            value: 0.5,
+                                                            backgroundColor: const Color(0xFFE2E8F0),
+                                                            valueColor: AlwaysStoppedAnimation<Color>(subjectColor),
+                                                            borderRadius: BorderRadius.circular(4),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        const Text(
+                                                          '50%',
+                                                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              const Icon(Icons.chevron_right, color: Color(0xFFCBD5E1)),
+                                            ],
+                                          ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.chevron_right, color: Color(0xFFCBD5E1)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
                     );
                   }
                   

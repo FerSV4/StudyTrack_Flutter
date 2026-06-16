@@ -386,7 +386,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: ab012d5c92f88326296c15936eecfd5ba2ce2b8c
+      resolved-ref: "7bd9bb9a7dfb48973333659017e722f7540084e6"
       url: "https://github.com/FerSV4/studytrack-design-system.git"
     source: git
     version: "0.0.1"
