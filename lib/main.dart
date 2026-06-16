@@ -5,6 +5,7 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'features/tasks/presentation/bloc/task_bloc.dart';
 import 'features/academic/presentation/bloc/academic_bloc.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
+import 'features/study_sessions/presentation/bloc/study_session_bloc.dart';
 import 'injection_container.dart' as di;
 
 void main() async {
@@ -32,6 +33,9 @@ class StudyTrackApp extends StatelessWidget {
         ),
         BlocProvider<ProfileBloc>(
           create: (context) => di.sl<ProfileBloc>(),
+        ),
+        BlocProvider<StudySessionBloc>(
+          create: (context) => di.sl<StudySessionBloc>(),
         ),
       ],
       child: MaterialApp(

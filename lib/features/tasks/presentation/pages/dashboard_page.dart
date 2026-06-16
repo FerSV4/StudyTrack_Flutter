@@ -5,6 +5,7 @@ import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../academic/presentation/bloc/academic_bloc.dart';
 import '../../../academic/presentation/bloc/academic_event.dart';
 import '../../../academic/presentation/bloc/academic_state.dart';
+import '../../../study_sessions/presentation/pages/timer_page.dart';
 import '../widgets/task_form_bottom_sheet.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -216,7 +217,9 @@ class _DashboardPageState extends State<DashboardPage> {
         onTap: (index) {
           if (index == 1) {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const AgendaPage()));
-          } else if (index == 3) { // El índice 3 es "Ajustes/Perfil"
+          } else if (index == 2) { 
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const TimerPage()));
+          } else if (index == 3) {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
           }
         },

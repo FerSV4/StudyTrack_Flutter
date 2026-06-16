@@ -21,6 +21,11 @@ dependencies:
   
   dartz: ^0.10.1
 
+  studytrack_design_system:
+    git:
+      url: https://github.com/FerSV4/studytrack-design-system.git
+      ref: main
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
