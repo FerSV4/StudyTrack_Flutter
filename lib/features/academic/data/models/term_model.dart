@@ -1,34 +1,17 @@
-import 'package:equatable/equatable.dart';
+import '../../domain/entities/term_entity.dart';
+import 'subject_model.dart';
 
-class SubjectModel extends Equatable {
-  final String id;
-  final String name;
-  final String colorCode;
-
-  const SubjectModel({required this.id, required this.name, required this.colorCode});
-
-  factory SubjectModel.fromJson(Map<String, dynamic> json) {
-    return SubjectModel(
-      id: json['id'].toString(),
-      name: json['name'] ?? 'Sin nombre',
-      colorCode: json['color_code'] ?? '#808080',
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, name, colorCode];
-}
-
-class TermModel extends Equatable {
-  final String id;
-  final String name;
-  final List<SubjectModel> subjects;
-
-  const TermModel({required this.id, required this.name, required this.subjects});
+class TermModel extends TermEntity {
+  const TermModel({
+    required super.id,
+    required super.name,
+    required super.subjects,
+  });
 
   factory TermModel.fromJson(Map<String, dynamic> json) {
-    var list = json['subjects'] as List? ?? [];
-    List<SubjectModel> subjectsList = list.map((i) => SubjectModel.fromJson(i)).toList();
+    final list = json['subjects'] as List? ?? [];
+    final subjectsList =
+        list.map((i) => SubjectModel.fromJson(i as Map<String, dynamic>)).toList();
 
     return TermModel(
       id: json['id'].toString(),
@@ -36,7 +19,4 @@ class TermModel extends Equatable {
       subjects: subjectsList,
     );
   }
-
-  @override
-  List<Object?> get props => [id, name, subjects];
 }

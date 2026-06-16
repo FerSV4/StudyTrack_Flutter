@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../academic/data/models/term_model.dart';
+import '../../../academic/domain/entities/subject_entity.dart';
 import '../../../academic/presentation/bloc/academic_bloc.dart';
 import '../../../academic/presentation/bloc/academic_event.dart';
 import '../../../academic/presentation/bloc/academic_state.dart';
@@ -106,15 +106,18 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
     }
   }
 
-  void _submit(List<SubjectModel> subjects) {
+  void _submit(List<SubjectEntity> subjects) {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final selectedSubject = subjects.firstWhere(
-      (subject) => subject.id == _selectedSubjectId,
-      orElse: () => subjects.first,
-    );
+    SubjectEntity selectedSubject = subjects.first;
+    for (final subject in subjects) {
+      if (subject.id == _selectedSubjectId) {
+        selectedSubject = subject;
+        break;
+      }
+    }
 
     final estimatedHoursText = _estimatedHoursController.text.trim();
     final estimatedHours =
@@ -153,12 +156,13 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
       padding: EdgeInsets.fromLTRB(20, 12, 20, bottomInset + 24),
       child: BlocBuilder<AcademicBloc, AcademicState>(
         builder: (context, state) {
-          final subjects = state is AcademicLoaded ? state.term.subjects : <SubjectModel>[];
+          // SOLUCIÓN: Lista dinámica segura
+          final subjects = state is AcademicLoaded ? state.term.subjects : <SubjectEntity>[];
 
           if (_selectedSubjectId == null && subjects.isNotEmpty) {
             final preferred = widget.initialSubjectName != null
                 ? subjects.where((subject) => subject.name == widget.initialSubjectName).toList()
-                : <SubjectModel>[];
+                : <SubjectEntity>[];
             _selectedSubjectId = preferred.isNotEmpty ? preferred.first.id : subjects.first.id;
           }
 
@@ -216,7 +220,8 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
                         maxLines: 3,
                       ),
                       const SizedBox(height: 16),
-                      _buildDropdownField<SubjectModel>(
+                      // SOLUCIÓN: Tipado dinámico en el Dropdown
+                      _buildDropdownField<SubjectEntity>(
                         label: 'Materia',
                         value: subjects.where((subject) => subject.id == _selectedSubjectId).isNotEmpty
                             ? subjects.firstWhere((subject) => subject.id == _selectedSubjectId)
@@ -366,7 +371,7 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
     String? hint,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       validator: validator,
       decoration: _inputDecoration(label),
       hint: hint != null ? Text(hint) : null,
