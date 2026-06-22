@@ -1,8 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:studytrack_design_system/studytrack_design_system.dart';
 import 'agenda_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../profile/presentation/bloc/profile_event.dart';
+import '../../../profile/presentation/bloc/profile_state.dart';
 import '../../../academic/presentation/pages/create_term_page.dart';
 import '../../../academic/presentation/bloc/academic_bloc.dart';
 import '../../../academic/presentation/bloc/academic_event.dart';
@@ -18,10 +23,21 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  String? _localBase64Image;
+  String? _currentEmail;
+
   @override
   void initState() {
     super.initState();
     context.read<AcademicBloc>().add(GetActiveTermRequested());
+    context.read<ProfileBloc>().add(GetProfileRequested());
+  }
+
+  Future<void> _loadLocalImage(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _localBase64Image = prefs.getString('profile_picture_$email');
+    });
   }
 
   Color _hexToColor(String hexString) {
@@ -38,41 +54,67 @@ class _DashboardPageState extends State<DashboardPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF8FAFC),
         elevation: 0,
-        title: BlocBuilder<AcademicBloc, AcademicState>(
-          builder: (context, state) {
-            String termName = 'Cargando semestre...';
-            
-            if (state is AcademicLoaded) {
-              termName = state.term.name;
-            } else if (state is AcademicError) {
-              termName = 'Error de conexión';
-            }
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, state) {
+                String greeting = 'Hola, Estudiante';
+                
+                if (state is ProfileLoaded) {
+                  final firstName = state.profile.fullName.split(' ').first;
+                  greeting = 'Hola, $firstName';
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Hola, Estudiante StudyTrack',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                ),
-                Text(
+                  if (_currentEmail != state.profile.email) {
+                    _currentEmail = state.profile.email;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _loadLocalImage(state.profile.email);
+                    });
+                  }
+                }
+                
+                return Text(
+                  greeting,
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                );
+              },
+            ),
+            BlocBuilder<AcademicBloc, AcademicState>(
+              builder: (context, state) {
+                String termName = 'Cargando semestre...';
+                if (state is AcademicLoaded) {
+                  termName = state.term.name;
+                } else if (state is AcademicError) {
+                  termName = 'Error de conexión';
+                }
+                return Text(
                   termName,
                   style: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
-                ),
-              ],
-            );
-          },
+                );
+              },
+            ),
+          ],
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: const Color(0xFFE2E8F0),
-              child: IconButton(
-                icon: const Icon(Icons.person, color: Color(0xFF64748B)),
-                onPressed: () {
-                },
-              ),
+            child: BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (context, state) {
+                final bool hasImage = _localBase64Image != null && 
+                                      state is ProfileLoaded && 
+                                      state.profile.email == _currentEmail;
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: const Color(0xFFE2E8F0),
+                    backgroundImage: hasImage ? MemoryImage(base64Decode(_localBase64Image!)) : null,
+                    child: hasImage ? null : const Icon(Icons.person, color: Color(0xFF64748B)),
+                  ),
+                );
+              },
             ),
           )
         ],
