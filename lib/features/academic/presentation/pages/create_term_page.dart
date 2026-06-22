@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:studytrack_design_system/studytrack_design_system.dart';
 
 import '../../data/dtos/create_term_dto.dart';
-import '../../domain/entities/term_entity.dart';
 import '../bloc/academic_bloc.dart';
 import '../bloc/academic_event.dart';
 import '../bloc/academic_state.dart';
