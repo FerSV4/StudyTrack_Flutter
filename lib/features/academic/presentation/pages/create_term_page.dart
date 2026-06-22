@@ -72,7 +72,7 @@ class _CreateTermPageState extends State<CreateTermPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => SubjectManagerPage(term: state.term as TermEntity),
+              builder: (_) => SubjectManagerPage(term: state.term),
             ),
           );
         }

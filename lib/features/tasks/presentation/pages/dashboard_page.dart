@@ -177,6 +177,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 width: 48,
                                                 height: 48,
                                                 decoration: BoxDecoration(
+                                                  // ignore: deprecated_member_use
                                                   color: subjectColor.withOpacity(0.1),
                                                   borderRadius: BorderRadius.circular(12),
                                                 ),
