@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../tasks/presentation/pages/dashboard_page.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -15,6 +19,50 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final LocalAuthentication _localAuth = LocalAuthentication();
+
+  @override
+  void initState() {
+    super.initState();
+    // Ejecutamos la verificación biométrica silenciosa apenas cargue la pantalla
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkBiometricsOnStart();
+    });
+  }
+
+  Future<void> _checkBiometricsOnStart() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('jwt_token');
+
+      // 1. Si no hay token o ya expiró, detenemos el proceso silenciosamente
+      if (token == null || JwtDecoder.isExpired(token)) {
+        if (token != null) await prefs.remove('jwt_token');
+        return;
+      }
+
+      // 2. Verificamos soporte de hardware en el teléfono
+      final isSupported = await _localAuth.isDeviceSupported();
+      final canCheckBiometrics = await _localAuth.canCheckBiometrics;
+      
+      if (!isSupported || !canCheckBiometrics) return;
+
+      // 3. Si el token es válido y el teléfono tiene biometría, levantamos el prompt nativo
+      final authenticated = await _localAuth.authenticate(
+        localizedReason: 'Inicia sesión rápidamente con tu huella',
+      );
+
+      // 4. Si la huella es correcta, saltamos al Dashboard de inmediato
+      if (authenticated && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error de autenticación biométrica en login: $e");
+    }
+  }
 
   @override
   void dispose() {
@@ -111,9 +159,9 @@ class _LoginPageState extends State<LoginPage> {
                       const SnackBar(content: Text('¡Login Exitoso!'), backgroundColor: Colors.green),
                     );
                     Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(builder: (context) => const DashboardPage()),
-);
+                      context,
+                      MaterialPageRoute(builder: (context) => const DashboardPage()),
+                    );
                   }
                 },
                 builder: (context, state) {

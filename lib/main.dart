@@ -63,47 +63,37 @@ class _StudyTrackAppState extends State<StudyTrackApp> {
   }
 
   void _handleDeepLink(Uri uri) {
-  if (uri.scheme == 'studytrack' && uri.host == 'task') {
-    final path = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
+    if (uri.scheme == 'studytrack' && uri.host == 'task') {
+      final path = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
 
-    if (path == 'new') {
-      final incomingTitle = uri.queryParameters['title'];
-      final incomingDescription = uri.queryParameters['description'];
+      if (path == 'new') {
+        final incomingTitle = uri.queryParameters['title'];
+        final incomingDescription = uri.queryParameters['description'];
 
-      Future.delayed(const Duration(milliseconds: 500), () {
-        final context = _navigatorKey.currentContext;
+        Future.delayed(const Duration(milliseconds: 500), () {
+          final context = _navigatorKey.currentContext;
 
-        if (context != null && context.mounted) {
-          showTaskFormBottomSheet(
-            context,
-            initialTitle: incomingTitle,
-            initialDescription: incomingDescription,
-          );
-        }
-      });
+          if (context != null && context.mounted) {
+            showTaskFormBottomSheet(
+              context,
+              initialTitle: incomingTitle,
+              initialDescription: incomingDescription,
+            );
+          }
+        });
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>(
-          create: (context) => di.sl<AuthBloc>(),
-        ),
-        BlocProvider<TaskBloc>(
-          create: (context) => di.sl<TaskBloc>(),
-        ),
-        BlocProvider<AcademicBloc>(
-          create: (context) => di.sl<AcademicBloc>(),
-        ),
-        BlocProvider<ProfileBloc>(
-          create: (context) => di.sl<ProfileBloc>(),
-        ),
-        BlocProvider<StudySessionBloc>(
-          create: (context) => di.sl<StudySessionBloc>(),
-        ),
+        BlocProvider<AuthBloc>(create: (context) => di.sl<AuthBloc>()),
+        BlocProvider<TaskBloc>(create: (context) => di.sl<TaskBloc>()),
+        BlocProvider<AcademicBloc>(create: (context) => di.sl<AcademicBloc>()),
+        BlocProvider<ProfileBloc>(create: (context) => di.sl<ProfileBloc>()),
+        BlocProvider<StudySessionBloc>(create: (context) => di.sl<StudySessionBloc>()),
       ],
       child: MaterialApp(
         navigatorKey: _navigatorKey,
