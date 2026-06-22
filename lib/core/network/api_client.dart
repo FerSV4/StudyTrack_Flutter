@@ -6,7 +6,7 @@ class ApiClient {
   final SharedPreferences sharedPreferences;
 
   ApiClient({required this.dio, required this.sharedPreferences}) {
-    dio.options.baseUrl = 'http://127.0.0.1:3000/api';
+    dio.options.baseUrl = 'http://32.197.252.163:30000/api';
     dio.options.connectTimeout = const Duration(seconds: 10);
     
     dio.interceptors.add(InterceptorsWrapper(
