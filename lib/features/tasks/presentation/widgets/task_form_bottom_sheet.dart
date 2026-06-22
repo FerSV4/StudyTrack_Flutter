@@ -13,6 +13,8 @@ Future<void> showTaskFormBottomSheet(
   BuildContext context, {
   TaskEntity? task,
   String? initialSubjectName,
+  String? initialTitle, //PARÁMETRO
+  String? initialDescription, //PARÁMETRO
 }) {
   final academicBloc = context.read<AcademicBloc>();
   if (academicBloc.state is! AcademicLoaded) {
@@ -30,6 +32,8 @@ Future<void> showTaskFormBottomSheet(
       return _TaskFormBottomSheet(
         task: task,
         initialSubjectName: initialSubjectName,
+        initialTitle: initialTitle, // VALOR
+        initialDescription: initialDescription, // VALOR
       );
     },
   );
@@ -38,10 +42,14 @@ Future<void> showTaskFormBottomSheet(
 class _TaskFormBottomSheet extends StatefulWidget {
   final TaskEntity? task;
   final String? initialSubjectName;
+  final String? initialTitle;
+  final String? initialDescription;
 
   const _TaskFormBottomSheet({
     this.task,
     this.initialSubjectName,
+    this.initialTitle,
+    this.initialDescription,
   });
 
   @override
@@ -63,8 +71,10 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
   void initState() {
     super.initState();
     final task = widget.task;
-    _titleController = TextEditingController(text: task?.title ?? '');
-    _descriptionController = TextEditingController(text: task?.description ?? '');
+    
+    _titleController = TextEditingController(text: task?.title ?? widget.initialTitle ?? '');
+    _descriptionController = TextEditingController(text: task?.description ?? widget.initialDescription ?? '');
+    
     _estimatedHoursController = TextEditingController(
       text: task?.estimatedHours != null ? _formatHours(task!.estimatedHours!) : '',
     );
@@ -156,7 +166,6 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
       padding: EdgeInsets.fromLTRB(20, 12, 20, bottomInset + 24),
       child: BlocBuilder<AcademicBloc, AcademicState>(
         builder: (context, state) {
-          // SOLUCIÓN: Lista dinámica segura
           final subjects = state is AcademicLoaded ? state.term.subjects : <SubjectEntity>[];
 
           if (_selectedSubjectId == null && subjects.isNotEmpty) {
@@ -220,7 +229,6 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
                         maxLines: 3,
                       ),
                       const SizedBox(height: 16),
-                      // SOLUCIÓN: Tipado dinámico en el Dropdown
                       _buildDropdownField<SubjectEntity>(
                         label: 'Materia',
                         value: subjects.where((subject) => subject.id == _selectedSubjectId).isNotEmpty
