@@ -53,6 +53,25 @@ class TaskModel extends TaskEntity {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'subjectId': subjectId,
+      'title': title,
+      'description': description,
+      'dueDate': dueDate.toIso8601String(),
+      'estimatedHours': estimatedHours,
+      'priority': priority,
+      'status': isCompleted ? 'completed' : 'pending', 
+
+      'subjects': {
+        'id': subjectId,
+        'name': subjectName,
+        'color_code': subjectColor,
+      }
+    };
+  }
+
   Map<String, dynamic> toCreateOrUpdateJson() {
     final Map<String, dynamic> data = {
       'subjectId': int.parse(subjectId),
