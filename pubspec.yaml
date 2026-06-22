@@ -25,6 +25,9 @@ dependencies:
     git:
       url: https://github.com/FerSV4/studytrack-design-system.git
       ref: main
+  image_picker: ^1.2.2
+  permission_handler: ^12.0.3
+  app_links: ^7.0.0
 
 dev_dependencies:
   flutter_test:

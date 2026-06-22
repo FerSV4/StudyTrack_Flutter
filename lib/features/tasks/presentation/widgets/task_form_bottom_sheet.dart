@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../academic/data/models/term_model.dart';
+import '../../../academic/domain/entities/subject_entity.dart';
 import '../../../academic/presentation/bloc/academic_bloc.dart';
 import '../../../academic/presentation/bloc/academic_event.dart';
 import '../../../academic/presentation/bloc/academic_state.dart';
@@ -13,6 +13,8 @@ Future<void> showTaskFormBottomSheet(
   BuildContext context, {
   TaskEntity? task,
   String? initialSubjectName,
+  String? initialTitle, //PARÁMETRO
+  String? initialDescription, //PARÁMETRO
 }) {
   final academicBloc = context.read<AcademicBloc>();
   if (academicBloc.state is! AcademicLoaded) {
@@ -30,6 +32,8 @@ Future<void> showTaskFormBottomSheet(
       return _TaskFormBottomSheet(
         task: task,
         initialSubjectName: initialSubjectName,
+        initialTitle: initialTitle, // VALOR
+        initialDescription: initialDescription, // VALOR
       );
     },
   );
@@ -38,10 +42,14 @@ Future<void> showTaskFormBottomSheet(
 class _TaskFormBottomSheet extends StatefulWidget {
   final TaskEntity? task;
   final String? initialSubjectName;
+  final String? initialTitle;
+  final String? initialDescription;
 
   const _TaskFormBottomSheet({
     this.task,
     this.initialSubjectName,
+    this.initialTitle,
+    this.initialDescription,
   });
 
   @override
@@ -63,8 +71,10 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
   void initState() {
     super.initState();
     final task = widget.task;
-    _titleController = TextEditingController(text: task?.title ?? '');
-    _descriptionController = TextEditingController(text: task?.description ?? '');
+    
+    _titleController = TextEditingController(text: task?.title ?? widget.initialTitle ?? '');
+    _descriptionController = TextEditingController(text: task?.description ?? widget.initialDescription ?? '');
+    
     _estimatedHoursController = TextEditingController(
       text: task?.estimatedHours != null ? _formatHours(task!.estimatedHours!) : '',
     );
@@ -106,15 +116,18 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
     }
   }
 
-  void _submit(List<SubjectModel> subjects) {
+  void _submit(List<SubjectEntity> subjects) {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final selectedSubject = subjects.firstWhere(
-      (subject) => subject.id == _selectedSubjectId,
-      orElse: () => subjects.first,
-    );
+    SubjectEntity selectedSubject = subjects.first;
+    for (final subject in subjects) {
+      if (subject.id == _selectedSubjectId) {
+        selectedSubject = subject;
+        break;
+      }
+    }
 
     final estimatedHoursText = _estimatedHoursController.text.trim();
     final estimatedHours =
@@ -153,12 +166,12 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
       padding: EdgeInsets.fromLTRB(20, 12, 20, bottomInset + 24),
       child: BlocBuilder<AcademicBloc, AcademicState>(
         builder: (context, state) {
-          final subjects = state is AcademicLoaded ? state.term.subjects : <SubjectModel>[];
+          final subjects = state is AcademicLoaded ? state.term.subjects : <SubjectEntity>[];
 
           if (_selectedSubjectId == null && subjects.isNotEmpty) {
             final preferred = widget.initialSubjectName != null
                 ? subjects.where((subject) => subject.name == widget.initialSubjectName).toList()
-                : <SubjectModel>[];
+                : <SubjectEntity>[];
             _selectedSubjectId = preferred.isNotEmpty ? preferred.first.id : subjects.first.id;
           }
 
@@ -216,7 +229,7 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
                         maxLines: 3,
                       ),
                       const SizedBox(height: 16),
-                      _buildDropdownField<SubjectModel>(
+                      _buildDropdownField<SubjectEntity>(
                         label: 'Materia',
                         value: subjects.where((subject) => subject.id == _selectedSubjectId).isNotEmpty
                             ? subjects.firstWhere((subject) => subject.id == _selectedSubjectId)
@@ -366,7 +379,7 @@ class _TaskFormBottomSheetState extends State<_TaskFormBottomSheet> {
     String? hint,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       validator: validator,
       decoration: _inputDecoration(label),
       hint: hint != null ? Text(hint) : null,

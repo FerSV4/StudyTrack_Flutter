@@ -22,6 +22,8 @@ import 'features/tasks/presentation/bloc/task_bloc.dart';
 import 'features/academic/data/datasources/academic_remote_data_source.dart';
 import 'features/academic/data/repositories/academic_repository_impl.dart';
 import 'features/academic/domain/repositories/academic_repository.dart';
+import 'features/academic/domain/usecases/create_subject_usecase.dart';
+import 'features/academic/domain/usecases/create_term_usecase.dart';
 import 'features/academic/domain/usecases/get_active_term_usecase.dart';
 import 'features/academic/presentation/bloc/academic_bloc.dart';
 import 'features/profile/data/datasources/profile_remote_data_source.dart';
@@ -70,6 +72,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => UpdateTaskUseCase(sl()));
   sl.registerLazySingleton(() => DeleteTaskUseCase(sl()));
   sl.registerLazySingleton(() => GetActiveTermUseCase(sl()));
+  sl.registerLazySingleton(() => CreateTermUseCase(sl()));
+  sl.registerLazySingleton(() => CreateSubjectUseCase(sl()));
   sl.registerLazySingleton(() => GetProfileUseCase(sl()));
   sl.registerLazySingleton(() => StartSessionUseCase(sl()));
   sl.registerLazySingleton(() => FinishSessionUseCase(sl()));
@@ -83,7 +87,11 @@ Future<void> init() async {
         updateTaskUseCase: sl(),
         deleteTaskUseCase: sl(),
       ));
-  sl.registerFactory(() => AcademicBloc(getActiveTermUseCase: sl()));
+  sl.registerFactory(() => AcademicBloc(
+        getActiveTermUseCase: sl(),
+        createTermUseCase: sl(),
+        createSubjectUseCase: sl(),
+      ));
   sl.registerFactory(() => ProfileBloc(getProfileUseCase: sl()));
   sl.registerFactory(() => StudySessionBloc(
         startSessionUseCase: sl(),
