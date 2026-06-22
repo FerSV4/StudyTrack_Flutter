@@ -14,7 +14,7 @@ class StudyTrackWidgetbook extends StatelessWidget {
     return Widgetbook.material(
       directories: [
         WidgetbookCategory(
-          name: 'Design System StudyTrack',
+          name: 'Design System de StudyTrack',
           children: [
             WidgetbookFolder(
               name: 'Botones',
@@ -29,11 +29,11 @@ class StudyTrackWidgetbook extends StatelessWidget {
                           padding: const EdgeInsets.all(32.0),
                           child: StButton(
                             text: context.knobs.string(
-                              label: 'Texto del botón',
+                              label: 'Texto del boton',
                               initialValue: 'Guardar Tarea',
                             ),
                             isLoading: context.knobs.boolean(
-                              label: 'Estado de carga (isLoading)',
+                              label: 'Estado de carga del boton',
                               initialValue: false,
                             ),
                             onPressed: () {},
@@ -89,11 +89,11 @@ class StudyTrackWidgetbook extends StatelessWidget {
                           padding: const EdgeInsets.all(32.0),
                           child: StTextField(
                             label: context.knobs.string(
-                              label: 'Etiqueta (label)',
+                              label: 'Etiqueta',
                               initialValue: 'Nombre de la Materia',
                             ),
                             hint: context.knobs.string(
-                              label: 'Texto de ayuda (hint)',
+                              label: 'Texto de guia',
                               initialValue: 'Plataformas Moviles',
                             ),
                             readOnly: context.knobs.boolean(

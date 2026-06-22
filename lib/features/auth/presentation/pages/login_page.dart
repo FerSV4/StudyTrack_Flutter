@@ -24,7 +24,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // Ejecutamos la verificación biométrica silenciosa apenas cargue la pantalla
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkBiometricsOnStart();
     });
@@ -35,24 +34,20 @@ class _LoginPageState extends State<LoginPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('jwt_token');
 
-      // 1. Si no hay token o ya expiró, detenemos el proceso silenciosamente
       if (token == null || JwtDecoder.isExpired(token)) {
         if (token != null) await prefs.remove('jwt_token');
         return;
       }
 
-      // 2. Verificamos soporte de hardware en el teléfono
       final isSupported = await _localAuth.isDeviceSupported();
       final canCheckBiometrics = await _localAuth.canCheckBiometrics;
       
       if (!isSupported || !canCheckBiometrics) return;
 
-      // 3. Si el token es válido y el teléfono tiene biometría, levantamos el prompt nativo
       final authenticated = await _localAuth.authenticate(
         localizedReason: 'Inicia sesión rápidamente con tu huella',
       );
 
-      // 4. Si la huella es correcta, saltamos al Dashboard de inmediato
       if (authenticated && mounted) {
         Navigator.pushReplacement(
           context,
@@ -60,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      debugPrint("Error de autenticación biométrica en login: $e");
+      debugPrint("Error de autenticación: $e");
     }
   }
 
