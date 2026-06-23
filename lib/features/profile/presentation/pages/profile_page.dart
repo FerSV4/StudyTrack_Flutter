@@ -141,151 +141,162 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                if (statusWidget != null) statusWidget,
-                StCard(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      GestureDetector(
-                        onTap: () {
-                          if (activeEmail.isEmpty) return;
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (_) => SafeArea(
-                              child: Wrap(
-                                children: [
-                                  ListTile(
-                                    leading: const Icon(Icons.camera_alt),
-                                    title: const Text('Tomar foto con Cámara'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _pickImage(ImageSource.camera, activeEmail);
-                                    },
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Column(
+                  children: [
+                    statusWidget ?? const SizedBox.shrink(),
+                    
+                    StCard(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          GestureDetector(
+                            onTap: () {
+                              if (activeEmail.isEmpty) return;
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (_) => SafeArea(
+                                  child: Wrap(
+                                    children: [
+                                      ListTile(
+                                        leading: const Icon(Icons.camera_alt),
+                                        title: const Text('Tomar foto con Cámara'),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          _pickImage(ImageSource.camera, activeEmail);
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(Icons.photo_library),
+                                        title: const Text('Elegir de Galería'),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          _pickImage(ImageSource.gallery, activeEmail);
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                  ListTile(
-                                    leading: const Icon(Icons.photo_library),
-                                    title: const Text('Elegir de Galería'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _pickImage(ImageSource.gallery, activeEmail);
-                                    },
+                                ),
+                              );
+                            },
+                            child: Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                CircleAvatar(
+                                  radius: 50,
+                                  backgroundColor: StColors.border,
+                                  backgroundImage: _localBase64Image != null && activeEmail == _currentEmail
+                                      ? MemoryImage(base64Decode(_localBase64Image!))
+                                      : null,
+                                  child: _localBase64Image == null || activeEmail != _currentEmail
+                                      ? const Icon(Icons.person, size: 50, color: StColors.textPrimary)
+                                      : null,
+                                ),
+                                Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
                                   ),
-                                ],
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(4.0),
+                                    child: Icon(Icons.edit, color: Colors.blue, size: 20),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            fullName,
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: StColors.textPrimary),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            email,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: StColors.textPrimary.withValues(alpha: 0.6),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isProPlan ? const Color(0xFFF59E0B).withValues(alpha: 0.1) : StColors.border,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isProPlan ? const Color(0xFFF59E0B) : StColors.border,
                               ),
                             ),
+                            child: Text(
+                              'Plan $subscriptionTier',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: isProPlan ? const Color(0xFFF59E0B) : StColors.textPrimary.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    StCard(
+                      child: Column(
+                        children: [
+                          _buildSettingsItem(
+                            icon: Icons.access_time_filled_outlined,
+                            title: 'Zona Horaria',
+                            subtitle: timezone,
+                            onTap: () {},
+                          ),
+                          const Divider(height: 1, color: StColors.border),
+                          _buildSettingsItem(
+                            icon: Icons.lock_outline,
+                            title: 'Cambiar Contraseña',
+                            onTap: () {},
+                          ),
+                          const Divider(height: 1, color: StColors.border),
+                          _buildSettingsItem(
+                            icon: Icons.notifications_none_outlined,
+                            title: 'Notificaciones',
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.clear();
+
+                          if (!context.mounted) return;
+                          
+                          context.read<AuthBloc>().add(AuthLogoutRequested());
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (context) => const LoginPage()),
+                            (Route<dynamic> route) => false,
                           );
                         },
-                        child: Stack(
-                          alignment: Alignment.bottomRight,
-                          children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: StColors.border,
-                              backgroundImage: _localBase64Image != null && activeEmail == _currentEmail
-                                  ? MemoryImage(base64Decode(_localBase64Image!))
-                                  : null,
-                              child: _localBase64Image == null || activeEmail != _currentEmail
-                                  ? const Icon(Icons.person, size: 50, color: StColors.textPrimary)
-                                  : null,
-                            ),
-                            Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Padding(
-                                padding: EdgeInsets.all(4.0),
-                                child: Icon(Icons.edit, color: Colors.blue, size: 20),
-                              ),
-                            )
-                          ],
+                        icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
+                        label: const Text('Cerrar Sesión', style: TextStyle(color: Color(0xFFEF4444), fontSize: 16)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        fullName,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: StColors.textPrimary),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        email,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: StColors.textPrimary.withValues(alpha: 0.6),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isProPlan ? const Color(0xFFF59E0B).withValues(alpha: 0.1) : StColors.border,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isProPlan ? const Color(0xFFF59E0B) : StColors.border,
-                          ),
-                        ),
-                        child: Text(
-                          'Plan $subscriptionTier',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isProPlan ? const Color(0xFFF59E0B) : StColors.textPrimary.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                StCard(
-                  child: Column(
-                    children: [
-                      _buildSettingsItem(
-                        icon: Icons.access_time_filled_outlined,
-                        title: 'Zona Horaria',
-                        subtitle: timezone,
-                        onTap: () {},
-                      ),
-                      const Divider(height: 1, color: StColors.border),
-                      _buildSettingsItem(
-                        icon: Icons.lock_outline,
-                        title: 'Cambiar Contraseña',
-                        onTap: () {},
-                      ),
-                      const Divider(height: 1, color: StColors.border),
-                      _buildSettingsItem(
-                        icon: Icons.notifications_none_outlined,
-                        title: 'Notificaciones',
-                        onTap: () {},
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      context.read<AuthBloc>().add(AuthLogoutRequested());
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
-                        (Route<dynamic> route) => false,
-                      );
-                    },
-                    icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
-                    label: const Text('Cerrar Sesión', style: TextStyle(color: Color(0xFFEF4444), fontSize: 16)),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: const BorderSide(color: Color(0xFFEF4444)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );

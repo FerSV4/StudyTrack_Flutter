@@ -71,127 +71,140 @@ class _SubjectManagerPageState extends State<SubjectManagerPage> {
         }
       },
       child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
-          title: const Text('Configurar materias'),
+          title: const Text('Configurar materias', style: TextStyle(fontWeight: FontWeight.bold)),
+          backgroundColor: const Color(0xFFF8FAFC),
+          elevation: 0,
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: ListView(
-                    children: [
-                      Text(
-                        'Semestre: ${widget.term.name}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      if (_addedSubjects.isNotEmpty) ...[
-                        Text(
-                          'Materias agregadas',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 12),
-                        ..._addedSubjects.map(
-                          (subject) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: StCard(
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 18,
-                                    height: 18,
-                                    decoration: BoxDecoration(
-                                      color: _hexToColor(subject.colorCode),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      subject.name,
-                                      style: Theme.of(context).textTheme.titleMedium,
-                                    ),
-                                  ),
-                                ],
-                              ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          Text(
+                            'Semestre: ${widget.term.name}',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F172A),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      StCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            StTextField(
-                              label: 'Nombre de la materia',
-                              hint: 'Ej. Matemática',
-                              controller: _nameController,
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Ingresa un nombre';
-                                }
-                                return null;
-                              },
+                          const SizedBox(height: 16),
+                          if (_addedSubjects.isNotEmpty) ...[
+                            Text(
+                              'Materias agregadas',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: const Color(0xFF64748B),
+                              ),
                             ),
-                            const SizedBox(height: 16),
-                            StColorPicker(
-                              selectedColorHex: _selectedColor,
-                              onColorSelected: (colorHex) {
-                                setState(() {
-                                  _selectedColor = colorHex;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 20),
-                            BlocBuilder<AcademicBloc, AcademicState>(
-                              builder: (context, state) {
-                                return StButton(
-                                  text: 'Añadir Materia',
-                                  isLoading: state is AcademicLoading,
-                                  onPressed: () {
-                                    if (!_formKey.currentState!.validate()) return;
-
-                                    context.read<AcademicBloc>().add(
-                                          CreateSubjectRequested(
-                                            termId: widget.term.id,
-                                            dto: CreateSubjectDto(
-                                              termId: widget.term.id,
-                                              name: _nameController.text.trim(),
-                                              colorCode: _selectedColor,
-                                            ),
-                                          ),
-                                        );
-                                  },
-                                );
-                              },
+                            const SizedBox(height: 12),
+                            ..._addedSubjects.map(
+                              (subject) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: StCard(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 18,
+                                        height: 18,
+                                        decoration: BoxDecoration(
+                                          color: _hexToColor(subject.colorCode),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          subject.name,
+                                          style: Theme.of(context).textTheme.titleMedium,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
-                        ),
+                          const SizedBox(height: 16),
+                          StCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                StTextField(
+                                  label: 'Nombre de la materia',
+                                  hint: 'Ej. Matemática',
+                                  controller: _nameController,
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return 'Ingresa un nombre';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                StColorPicker(
+                                  selectedColorHex: _selectedColor,
+                                  onColorSelected: (colorHex) {
+                                    setState(() {
+                                      _selectedColor = colorHex;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                BlocBuilder<AcademicBloc, AcademicState>(
+                                  builder: (context, state) {
+                                    return StButton(
+                                      text: 'Añadir Materia',
+                                      isLoading: state is AcademicLoading,
+                                      onPressed: () {
+                                        if (!_formKey.currentState!.validate()) return;
+
+                                        context.read<AcademicBloc>().add(
+                                              CreateSubjectRequested(
+                                                termId: widget.term.id,
+                                                dto: CreateSubjectDto(
+                                                  termId: widget.term.id,
+                                                  name: _nameController.text.trim(),
+                                                  colorCode: _selectedColor,
+                                                ),
+                                              ),
+                                            );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+                    BlocBuilder<AcademicBloc, AcademicState>(
+                      builder: (context, state) {
+                        final enabled = _addedSubjects.isNotEmpty && state is! AcademicLoading;
+                        return StButton(
+                          text: 'Finalizar y entrar a StudyTrack',
+                          onPressed: enabled
+                              ? () {
+                                  context.read<AcademicBloc>().add(GetActiveTermRequested());
+                                  Navigator.of(context).popUntil((route) => route.isFirst);
+                                }
+                              : null,
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                BlocBuilder<AcademicBloc, AcademicState>(
-                  builder: (context, state) {
-                    final enabled = _addedSubjects.isNotEmpty && state is! AcademicLoading;
-                    return StButton(
-                      text: 'Finalizar y entrar a StudyTrack',
-                      onPressed: enabled
-                          ? () {
-                              context.read<AcademicBloc>().add(GetActiveTermRequested());
-                              Navigator.of(context).popUntil((route) => route.isFirst);
-                            }
-                          : null,
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
           ),
         ),

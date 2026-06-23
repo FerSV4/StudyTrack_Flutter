@@ -1,70 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:local_auth/local_auth.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../tasks/presentation/pages/dashboard_page.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import 'register_page.dart';
+import 'login_page.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final LocalAuthentication _localAuth = LocalAuthentication();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkBiometricsOnStart();
-    });
-  }
-
-  Future<void> _checkBiometricsOnStart() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('jwt_token');
-
-      if (token == null || JwtDecoder.isExpired(token)) {
-        if (token != null) await prefs.remove('jwt_token');
-        return;
-      }
-
-      final isSupported = await _localAuth.isDeviceSupported();
-      final canCheckBiometrics = await _localAuth.canCheckBiometrics;
-      
-      if (!isSupported || !canCheckBiometrics) return;
-
-      final authenticated = await _localAuth.authenticate(
-        localizedReason: 'Inicia sesión rápidamente con tu huella',
-      );
-
-      if (authenticated && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
-        );
-      }
-    } catch (e) {
-      debugPrint("Error de autenticación: $e");
-    }
-  }
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _onRegisterPressed() {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    context.read<AuthBloc>().add(
+      AuthRegisterRequested(
+        fullName: _nameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+      ),
+    );
   }
 
   @override
@@ -76,31 +55,53 @@ class _LoginPageState extends State<LoginPage> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 450),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.menu_book_rounded, size: 48, color: Color(0xFF1D4ED8)),
+                  const Icon(Icons.person_add_alt_1_rounded, size: 48, color: Color(0xFF1D4ED8)),
                   const SizedBox(height: 16),
                   const Text(
-                    'Bienvenido',
+                    'Crear Cuenta',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Ingresa tus credenciales para continuar',
+                    'Únete a StudyTrack y empieza a organizar tu vida academica',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Color(0xFF64748B)),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
                   
+                  const Text('Nombre Completo', style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      hintText: 'Nombre y apellido',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
                   const Text('Correo electrónico', style: TextStyle(fontWeight: FontWeight.w500)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      hintText: 'email@dominio.edu',
+                      hintText: 'estudiante@dominio.edu',
                       prefixIcon: const Icon(Icons.mail_outline),
                       filled: true,
                       fillColor: Colors.white,
@@ -114,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
                   const Text('Contraseña', style: TextStyle(fontWeight: FontWeight.w500)),
                   const SizedBox(height: 8),
@@ -124,7 +125,6 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: InputDecoration(
                       hintText: '••••••••',
                       prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: const Icon(Icons.visibility_off_outlined),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -137,15 +137,29 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text('¿Olvidaste tu contraseña?', style: TextStyle(color: Color(0xFF1D4ED8))),
+                  const SizedBox(height: 16),
+
+                  const Text('Confirmar Contraseña', style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: '••••••••',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
                   BlocConsumer<AuthBloc, AuthState>(
                     listener: (context, state) {
@@ -155,11 +169,12 @@ class _LoginPageState extends State<LoginPage> {
                         );
                       } else if (state is AuthAuthenticated) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('¡Login Exitoso!'), backgroundColor: Colors.green),
+                          const SnackBar(content: Text('Cuenta creada :)'), backgroundColor: Colors.green),
                         );
-                        Navigator.pushReplacement(
+                        Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(builder: (context) => const DashboardPage()),
+                          (route) => false,
                         );
                       }
                     },
@@ -169,66 +184,35 @@ class _LoginPageState extends State<LoginPage> {
                       }
 
                       return ElevatedButton(
-                        onPressed: () {
-                          context.read<AuthBloc>().add(
-                            AuthLoginRequested(
-                              email: _emailController.text,
-                              password: _passwordController.text,
-                            ),
-                          );
-                        },
+                        onPressed: _onRegisterPressed,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1D4ED8),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text('Iniciar Sesión', style: TextStyle(fontSize: 16, color: Colors.white)),
+                        child: const Text('Registrarse', style: TextStyle(fontSize: 16, color: Colors.white)),
                       );
                     },
                   ),
                   
-                  const SizedBox(height: 32),
-                  const Row(
-                    children: [
-                      Expanded(child: Divider()),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('O continúa con', style: TextStyle(color: Color(0xFF64748B))),
-                      ),
-                      Expanded(child: Divider()),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-
-                  OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.g_mobiledata, color: Colors.red, size: 28),
-                    label: const Text('Google', style: TextStyle(color: Color(0xFF0F172A))),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      side: const BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
-                  ),
-
                   const SizedBox(height: 24),
                   
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        '¿No tienes una cuenta?',
+                        '¿Ya tienes una cuenta?',
                         style: TextStyle(color: Color(0xFF64748B)),
                       ),
                       TextButton(
                         onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                            MaterialPageRoute(builder: (context) => const RegisterPage()),
-                            );
-                          },
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginPage()),
+                          );
+                        },
                         child: const Text(
-                          'Regístrate aquí',
+                          'Inicia sesión',
                           style: TextStyle(color: Color(0xFF1D4ED8), fontWeight: FontWeight.bold),
                         ),
                       ),
