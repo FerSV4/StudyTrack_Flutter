@@ -82,85 +82,95 @@ class _CreateTermPageState extends State<CreateTermPage> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Configurar semestre')),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: [
-                StCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      StTextField(
-                        label: 'Nombre del semestre',
-                        hint: 'Ej. Semestre 1 - 2026',
-                        controller: _nameController,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Ingresa un nombre';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      StTextField(
-                        label: 'Fecha de inicio',
-                        hint: 'Selecciona una fecha',
-                        controller: _startDateController,
-                        readOnly: true,
-                        onTap: () => _pickDate(isStart: true),
-                        validator: (value) {
-                          if (_startDate == null) {
-                            return 'Selecciona una fecha de inicio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      StTextField(
-                        label: 'Fecha de fin',
-                        hint: 'Selecciona una fecha',
-                        controller: _endDateController,
-                        readOnly: true,
-                        onTap: () => _pickDate(isStart: false),
-                        validator: (value) {
-                          if (_endDate == null) {
-                            return 'Selecciona una fecha de fin';
-                          }
-                          if (_startDate != null && _endDate!.isBefore(_startDate!)) {
-                            return 'La fecha de fin debe ser posterior';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      BlocBuilder<AcademicBloc, AcademicState>(
-                        builder: (context, state) {
-                          final isLoading = state is AcademicLoading;
-                          return StButton(
-                            text: 'Crear semestre',
-                            isLoading: isLoading,
-                            onPressed: () {
-                              if (!_formKey.currentState!.validate()) return;
-                              context.read<AcademicBloc>().add(
-                                    CreateTermRequested(
-                                      CreateTermDto(
-                                        name: _nameController.text.trim(),
-                                        startDate: _startDate!,
-                                        endDate: _endDate!,
-                                      ),
-                                    ),
-                                  );
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          title: const Text('Configurar semestre', style: TextStyle(fontWeight: FontWeight.bold)),
+          backgroundColor: const Color(0xFFF8FAFC),
+          elevation: 0,
+        ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    StCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          StTextField(
+                            label: 'Nombre del semestre',
+                            hint: 'Ej. Semestre 1 - 2026',
+                            controller: _nameController,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Ingresa un nombre';
+                              }
+                              return null;
                             },
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 16),
+                          StTextField(
+                            label: 'Fecha de inicio',
+                            hint: 'Selecciona una fecha',
+                            controller: _startDateController,
+                            readOnly: true,
+                            onTap: () => _pickDate(isStart: true),
+                            validator: (value) {
+                              if (_startDate == null) {
+                                return 'Selecciona una fecha de inicio';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          StTextField(
+                            label: 'Fecha de fin',
+                            hint: 'Selecciona una fecha',
+                            controller: _endDateController,
+                            readOnly: true,
+                            onTap: () => _pickDate(isStart: false),
+                            validator: (value) {
+                              if (_endDate == null) {
+                                return 'Selecciona una fecha de fin';
+                              }
+                              if (_startDate != null && _endDate!.isBefore(_startDate!)) {
+                                return 'La fecha de fin debe ser posterior';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          BlocBuilder<AcademicBloc, AcademicState>(
+                            builder: (context, state) {
+                              final isLoading = state is AcademicLoading;
+                              return StButton(
+                                text: 'Crear semestre',
+                                isLoading: isLoading,
+                                onPressed: () {
+                                  if (!_formKey.currentState!.validate()) return;
+                                  context.read<AcademicBloc>().add(
+                                        CreateTermRequested(
+                                          CreateTermDto(
+                                            name: _nameController.text.trim(),
+                                            startDate: _startDate!,
+                                            endDate: _endDate!,
+                                          ),
+                                        ),
+                                      );
+                                },
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
