@@ -10,6 +10,7 @@ import 'features/tasks/presentation/widgets/task_form_bottom_sheet.dart';
 import 'features/academic/presentation/bloc/academic_bloc.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
 import 'features/study_sessions/presentation/bloc/study_session_bloc.dart';
+import 'core/widgets/global_network_banner.dart';
 
 import 'injection_container.dart' as di;
 
@@ -54,7 +55,7 @@ class _StudyTrackAppState extends State<StudyTrackApp> {
         _handleDeepLink(initialUri);
       }
     } catch (e) {
-      debugPrint("Error obteniendo el link inicial: $e");
+      debugPrint("Error: $e");
     }
 
     _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
@@ -107,6 +108,9 @@ class _StudyTrackAppState extends State<StudyTrackApp> {
           useMaterial3: true,
           fontFamily: 'Roboto',
         ),
+        builder: (context, child) {
+          return GlobalNetworkBanner(child: child!);
+        },
         home: const LoginPage(),
       ),
     );
